@@ -52,7 +52,6 @@ public class myArea : Area
 
     public override void ResetArea()
     {
-        Debug.Log("reset area");
         ResetAgent();
     }
 
@@ -129,8 +128,6 @@ public class myArea : Area
     //}
     private void ResetAgent()
     {
-        // Reset location and rotation
-        //transform.rotation.y = 0;
         RandomlyPlaceObject(myObject, spawnRange, 11);
     }
 

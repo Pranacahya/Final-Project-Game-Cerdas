@@ -6,7 +6,7 @@ public class WeaponScript : MonoBehaviour
 {
     public GameObject bulletObj;
     GameObject firePoint;
-    bulletBehavior myBullet;
+    public bulletBehavior myBullet;
     int tempAmo;
     int amo;
     int power;
@@ -17,7 +17,7 @@ public class WeaponScript : MonoBehaviour
     {
         this.myWeapon = weapons[0];
         this.power = 10;
-        this.amo = 1000;
+        this.amo = 999999;
     }
 
     // Update is called once per frame
@@ -69,6 +69,5 @@ public class WeaponScript : MonoBehaviour
             this.myWeapon = weapon;
             this.amo = 100;
         }
-       
     }
 }

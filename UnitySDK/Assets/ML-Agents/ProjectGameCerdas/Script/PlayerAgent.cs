@@ -8,7 +8,12 @@ public class PlayerAgent : Agent
     public float moveSpeed = 1f;
     public float rotateSpeed = 2f;
     public GameObject bulletObj;
+    public GameObject ground;
 
+    Material groundMaterial;
+    Renderer groundRenderer;
+    private bool stateReload = false;
+    bulletBehavior myBullet;
     private double timeLeft = 3f;
     private bool handToggle;
     private bool shootToggle;
@@ -23,6 +28,10 @@ public class PlayerAgent : Agent
     RayPerception rayPerception;
     // Start is called before the first frame update
 
+    private void Awake()
+    {
+        agentAcademy = FindObjectOfType<MyAcademy>();
+    }
     private void FixedUpdate()
     {
         if (shootToggle)
@@ -31,34 +40,37 @@ public class PlayerAgent : Agent
             timeLeft -= Time.deltaTime;
             if (timeLeft < 0)
             {
-                Debug.Log("hand");
+                //Debug.Log("hand");
                 timeLeft = 0.5;
                 handToggle = true;
             }
         }
+        //me.myWeapon.myBullet.HitReward();
     }
     public override void InitializeAgent()
     {
+        base.InitializeAgent();
         handToggle = true;
         shootToggle = false;
-        base.InitializeAgent();
         agentAcademy = FindObjectOfType<MyAcademy>();
         agentArea = transform.parent.GetComponent<MyArea>();
         agentRigidbody = GetComponent<Rigidbody>();
         agentRigidbody = GetComponent<Rigidbody>();
         rayPerception = GetComponent<RayPerception>();
         agentRigidbody = GetComponent<Rigidbody>();
+        groundRenderer = ground.GetComponent<Renderer>();
+        groundMaterial = groundRenderer.material;
         firePoint = transform.GetChild(2).gameObject;
         me = new PlayerScript("dadang");
-        ResetPlayer();
     }
 
     public override void CollectObservations()
     {
         // Add raycast perception observations for stumps and walls
-        float rayDistance = 20f;
+        float rayDistance = 10f;
         float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
         string[] detectableObjects = { "Player", "wall", "crate", "bullet" };
+        //Debug.Log(detectableObjects);
         AddVectorObs(rayPerception.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
         AddVectorObs(rayPerception.Perceive(rayDistance, rayAngles, detectableObjects, 1.5f, 0f));
     }
@@ -69,23 +81,42 @@ public class PlayerAgent : Agent
         {
             me.myWeapon.SetAmo(30);
             Destroy(collision.gameObject);
+            AddReward(2.5f);
+            agentArea.spawn();
+            if(stateReload)
+            {
+                AddReward(4f);
+                StartCoroutine(GoalScoredSwapGroundMaterial(agentAcademy.successMaterial, 0.5f));
+                Done();
+            }
         }
 
         if (collision.transform.tag == "wall" || collision.transform.tag == "player")
         {
+            AddReward(-0.001f);
+        }
+        if (collision.transform.tag == "bullet")
+        {
             AddReward(-0.01f);
         }
-
         if(collision.transform.name == "MachinegunCrate")
         {
-            me.myWeapon.SetWeapon("Machinegun");
-            Destroy(collision.gameObject);
+            //AddReward(1f);
+            //me.myWeapon.SetWeapon("Machinegun");
+            //Destroy(collision.gameObject);
         }
     }
     public override void AgentAction(float[] vectorAction, string textAction)
     {
+        AddReward(-1f / agentParameters.maxStep);
         // Determine the rotation action
         float rotateAmount = 0;
+        if(GetCumulativeReward()<=-3.5f)
+        {
+            StartCoroutine(GoalScoredSwapGroundMaterial(agentAcademy.failMaterial, 0.5f));
+            Done();
+            agentArea.ResetArea();
+        }
         if (vectorAction[1] == 1)
         {
             //transform.Rotate(0f, 0f, 0f);
@@ -115,12 +146,19 @@ public class PlayerAgent : Agent
 
         if (vectorAction[2] == 1 && me.myWeapon.GetWeapon() == "Handgun")
         {
-            shootToggle = true;
-
-            if (me.myWeapon.GetAmo() != 0 && handToggle)
+            if (!stateReload)
             {
-                Shoot();
+                shootToggle = true;
+                if (me.myWeapon.GetAmo() != 0 && handToggle)
+                {
+                    Shoot();
+                }
             }
+            else
+            {
+                AddReward(-0.01f);
+            }
+          
         }
         else
         {
@@ -128,26 +166,27 @@ public class PlayerAgent : Agent
         }
         if (vectorAction[2] == 1 && me.myWeapon.GetWeapon() == "Machinegun")
         {
+            AddReward(-.001f);
             Shoot();
         }
-       
+
         handToggle = true;
-        // Apply the movement
         Vector3 moveVector = transform.forward * moveAmount;
         agentRigidbody.AddForce(moveVector * moveSpeed, ForceMode.VelocityChange);
-        // Determine state
+        agentArea.UpdateScore(GetCumulativeReward());
     }
 
     public void Shoot()
     {
-        Debug.Log(me.myWeapon.GetAmo());
-        Debug.Log(me.myWeapon.GetWeapon());
         if (me.myWeapon.GetWeapon() == "Handgun" && handToggle && me.myWeapon.GetAmo() > 0)
         {
+            
             handToggle = false;
             me.myWeapon.Shoot();
             GameObject bulletObject = Instantiate(bulletObj, firePoint.transform.position, firePoint.transform.rotation);
             bulletObject.AddComponent<bulletBehavior>();
+            myBullet = bulletObject.GetComponent<bulletBehavior>();
+            myBullet.playerAgent = this;
             bulletObject.GetComponent<Rigidbody>().AddForce(transform.forward * 10f);
         }
 
@@ -155,20 +194,24 @@ public class PlayerAgent : Agent
         {
             me.myWeapon.Shoot();
             GameObject bulletObject = Instantiate(bulletObj, firePoint.transform.position, firePoint.transform.rotation);
+            myBullet = bulletObject.GetComponent<bulletBehavior>();
+            myBullet.playerAgent = this;
             bulletObject.AddComponent<bulletBehavior>();
-            bulletObject.GetComponent<Rigidbody>().AddForce(transform.forward * 10f);
+            bulletObject.GetComponent<Rigidbody>().AddForce(transform.forward * 1f);
             //bulletObect.GetComponent<bulletBehavior>().setPower(me.getPower());
         }
         if(me.myWeapon.GetWeapon() == "Machinegun" && me.myWeapon.GetAmo() == 0)
         {
-            Debug.Log("test");
             me.myWeapon.SetWeapon("Handgun");
         }
+       
     }
     
     public override void AgentReset()
     {
         ResetPlayer();
+        agentArea.spawnEnemy();
+        agentArea.spawnMe();
     }
 
     public void ResetPlayer()
@@ -180,5 +223,26 @@ public class PlayerAgent : Agent
     public GameObject getGameObject()
     {
         return this.gameObject;
+    }
+
+    public void BulletHit(string collision)
+    {
+        if(collision == "wall")
+        {
+            AddReward(-.005f);
+        }
+        if(collision == "player")
+        {
+            StartCoroutine(GoalScoredSwapGroundMaterial(agentAcademy.successMaterial, 0.5f));
+            AddReward(3.5f);
+            Done();
+        }
+    }
+
+    IEnumerator GoalScoredSwapGroundMaterial(Material mat, float time)
+    {
+        groundRenderer.material = mat;
+        yield return new WaitForSeconds(time);
+        groundRenderer.material = groundMaterial;
     }
 }

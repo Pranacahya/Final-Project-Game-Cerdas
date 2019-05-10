@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: dd5ceb8717ea1ca44b95a5b48a20542a
+ScriptedImporter:
+  fileIDToRecycleName:
+    11400000: Assets/ML-Agents/ProjectGameCerdas/Brain/LearningBrain.nn
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 83221ad3db87f4b3b91b041047cb2bc5, type: 3}

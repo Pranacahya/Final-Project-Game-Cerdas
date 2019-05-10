@@ -5,21 +5,18 @@ using UnityEngine;
 
 public class MyAcademy : Academy
 {
-    private myArea[] areas;
-    public override void AcademyReset()
-    {
-        if (areas == null)
-        {
-            areas = GameObject.FindObjectsOfType<myArea>();
-        }
+    //private myArea[] areas;
+    [Header("Specific to Shooting")]
+    public float agentRunSpeed;
+    public float agentJumpHeight;
+    //when a goal is scored the ground will use this material for a few seconds.
+    public Material successMaterial;
+    //when fail, the ground will use this material for a few seconds. 
+    public Material failMaterial;
+    public float gravityMultiplier = 2.5f;
 
-        foreach (myArea area in areas)
-        {
-            //area.numTruffles = (int)resetParameters["num_truffles"];
-            //area.numStumps = (int)resetParameters["num_stumps"];
-            //area.spawnRange = resetParameters["spawn_range"];
-            //area.spawnRange = resetParameters["spawn_range"];
-            area.ResetArea();
-        }
+    public override void InitializeAcademy()
+    {
+        Physics.gravity *= gravityMultiplier;
     }
 }

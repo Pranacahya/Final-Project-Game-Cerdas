@@ -106,7 +106,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8801218481325053391}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.8357644, z: 0, w: 0.54908824}
   m_LocalPosition: {x: -8.948477, y: 1.012, z: 1.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -171,8 +171,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
+  m_Radius: 1.21
+  m_Height: 0.68
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &162281040924488262
@@ -215,14 +215,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c285fa0e5b3bf974696c18f35eabeaa9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  brain: {fileID: 11400000, guid: 606a122d13999da4393aaa8964eb70a6, type: 2}
+  brain: {fileID: 11400000, guid: d43825a6009c0da43ba2b013aae41fac, type: 2}
   agentParameters:
     agentCameras: []
     maxStep: 0
     resetOnDone: 1
     onDemandDecision: 0
     numberOfActionsBetweenDecisions: 1
-  moveSpeed: 0.7
+  moveSpeed: 1.1
   rotateSpeed: 3
   bulletObj: {fileID: 1472375989267229780, guid: 810a1e3ed42795b49b4843f30b97ed2b,
     type: 3}
